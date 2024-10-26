@@ -1,59 +1,30 @@
 import 'package:flutter/material.dart';
-import 'CustomWidgets/friend_list_item.dart';
-import 'CustomWidgets/add_friend_button.dart';
-import 'CustomWidgets/create_event_button.dart';
-import 'CustomWidgets/search_bar.dart';
+import 'package:hedieaty_app/CustomWidgets/gradient_container.dart';
+import 'package:hedieaty_app/login_page.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
+const List<Color> colors = [
+  // Color.fromARGB(255, 0, 243, 16),
+  // Color.fromARGB(255, 74, 153, 0),
+  Color.fromARGB(255, 60, 2, 101),
+  Colors.deepPurple,
+];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Friends & Events',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const HomePage(),
+      // theme: ThemeData(
+      //   primarySwatch: Colors.blue,
+      // ),
+      home: GradientContainer(colors, LoginPage()), //LoginPage(),
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Friends & Events'),
-        actions: const [
-          CreateEventButton(),
-        ],
-      ),
-      body: Column(
-        children: [
-          const CustomSearchBar(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: 10, // Replace with the actual number of friends
-              itemBuilder: (context, index) {
-                return FriendListItem(
-                  name: 'Friend $index',
-                  profileImageUrl: 'https://via.placeholder.com/150',
-                  eventCount: index % 2 == 0 ? 2 : 0, // Example event logic
-                );
-              },
-            ),
-          ),
-          const AddFriendButton(),
-        ],
-      ),
     );
   }
 }
