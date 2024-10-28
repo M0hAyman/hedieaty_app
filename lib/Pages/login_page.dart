@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hedieaty_app/CustomWidgets/main_navigation_page.dart';
+import 'package:hedieaty_app/CustomWidgets/main_navigation_bar.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,21 +16,23 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   // Dummy credentials
-  final String _dummyEmail = "test@example.com";
-  final String _dummyPassword = "password123";
+  final String _dummyEmail = "mohamed@gmail.com";
+  final String _dummyPassword = "Mohamed123";
 
   void _login() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Check if entered credentials match the dummy data
       if (_emailController.text == _dummyEmail &&
           _passwordController.text == _dummyPassword) {
-        // Navigate to the home page
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MainNavigationPage()),
+          MaterialPageRoute(
+            builder: (context) => MainNavigationBar(
+              userName: "Mohamed",
+              userEmail: _dummyEmail,
+            ),
+          ),
         );
       } else {
-        // Show error if credentials do not match
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Invalid email or password')),
         );

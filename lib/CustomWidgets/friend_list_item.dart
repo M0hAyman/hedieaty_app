@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 
 class FriendListItem extends StatelessWidget {
   final String name;
-  final String profileImageUrl;
+  final String imagePath;
   final int eventCount;
+  final VoidCallback onTap; // New onTap parameter
 
   const FriendListItem({
     super.key,
     required this.name,
-    required this.profileImageUrl,
+    required this.imagePath,
     required this.eventCount,
+    required this.onTap, // Include onTap as a required parameter
   });
 
   @override
@@ -20,7 +22,7 @@ class FriendListItem extends StatelessWidget {
         leading: Stack(
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(profileImageUrl),
+              backgroundImage: AssetImage(imagePath),
               radius: 25,
             ),
             if (eventCount >
@@ -54,13 +56,12 @@ class FriendListItem extends StatelessWidget {
           ],
         ),
         title: Text(name),
-        onTap: () {
-          // Navigate to the friend's gift list
-        },
+        onTap: onTap, // Use the onTap callback here
       ),
     );
   }
 }
+
 
 
 

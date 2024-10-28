@@ -8,11 +8,11 @@ class GiftDetailsPage extends StatelessWidget {
   final bool isPledged;
 
   const GiftDetailsPage({
-    Key? key,
+    super.key,
     required this.giftName,
     required this.category,
     required this.isPledged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +26,12 @@ class GiftDetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              decoration: InputDecoration(labelText: 'Gift Name'),
+              decoration: const InputDecoration(labelText: 'Gift Name'),
               controller: TextEditingController(text: giftName),
               readOnly: true,
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Category'),
+              decoration: const InputDecoration(labelText: 'Category'),
               controller: TextEditingController(text: category),
               readOnly: true,
             ),

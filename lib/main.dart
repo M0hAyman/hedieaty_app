@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hedieaty_app/CustomWidgets/gradient_container.dart';
-import 'package:hedieaty_app/login_page.dart';
+//import 'package:hedieaty_app/home_page.dart';
+import 'package:hedieaty_app/Pages/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,12 +19,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Friends & Events',
+      initialRoute: '/', // Define the initial route if needed
+      routes: {
+        //'/': (context) => const HomePage(), // Home screen route
+        '/login': (context) => const LoginPage(), // Login screen route
+        // I will add ither routes when I need them
+      },
       // theme: ThemeData(
       //   primarySwatch: Colors.blue,
       // ),
-      home: GradientContainer(colors, LoginPage()), //LoginPage(),
+      home: const GradientContainer(colors, LoginPage()), //LoginPage(),
       debugShowCheckedModeBanner: false,
     );
   }

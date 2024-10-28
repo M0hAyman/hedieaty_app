@@ -10,7 +10,7 @@ class CustomSearchBar extends StatelessWidget {
       child: TextField(
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.search),
-          hintText: 'Search Gift Lists...',
+          hintText: 'Search Friends...',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
