@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hedieaty_app/CustomWidgets/main_navigation_bar.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,27 +15,31 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Dummy credentials
-  final String _dummyEmail = "mohamed@gmail.com";
-  final String _dummyPassword = "Mohamed123";
-
-  void _login() {
+  Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
-      if (_emailController.text == _dummyEmail &&
-          _passwordController.text == _dummyPassword) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainNavigationBar(
-              userName: "Mohamed",
-              userEmail: _dummyEmail,
-            ),
-          ),
+      try {
+        final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
-      } else {
+
+        final user = userCredential.user;
+        if (user != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MainNavigationBar(
+                userName: user.displayName ?? 'User',
+                userEmail: user.email!,
+              ),
+            ),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid email or password')),
+          SnackBar(content: Text(e.message ?? 'Authentication failed')),
         );
       }
     }

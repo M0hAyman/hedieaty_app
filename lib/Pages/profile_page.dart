@@ -65,13 +65,13 @@ class ProfilePage extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () => _logout(context),
-                child: const Text("Logout"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent, // Button color
                   padding:
                       const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   textStyle: const TextStyle(fontSize: 16),
                 ),
+                child: const Text("Logout"),
               ),
             ),
           ],
