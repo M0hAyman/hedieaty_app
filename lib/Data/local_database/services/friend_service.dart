@@ -1,5 +1,7 @@
 
 
+import 'package:sqflite/sqflite.dart';
+
 import '../mydatabase.dart';
 
 class FriendService {
@@ -7,7 +9,7 @@ class FriendService {
 
   Future<int> addFriend(int userId, int friendId) async {
     final db = await _dbService.getDatabaseInstance();
-    return await db!.insert('FRIENDS', {'USER_ID': userId, 'FRIEND_ID': friendId});
+    return await db!.insert('FRIENDS', {'USER_ID': userId, 'FRIEND_ID': friendId}, conflictAlgorithm: ConflictAlgorithm.replace,);
   }
 
   Future<List<Map<String, dynamic>>> getFriendsByUserId(int userId) async {

@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../mydatabase.dart';
 
 class EventService {
@@ -5,7 +7,7 @@ class EventService {
 
   Future<int> insertEvent(Map<String, dynamic> eventData) async {
     final db = await _dbService.getDatabaseInstance();
-    return await db!.insert('EVENTS', eventData);
+    return await db!.insert('EVENTS', eventData, conflictAlgorithm: ConflictAlgorithm.replace,);
   }
 
   Future<List<Map<String, dynamic>>> getEventsByUserId(int userId) async {

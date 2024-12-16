@@ -1,5 +1,4 @@
-
-
+import 'package:sqflite/sqflite.dart';
 import '../mydatabase.dart';
 
 class UserService {
@@ -7,7 +6,7 @@ class UserService {
 
   Future<int> insertUser(Map<String, dynamic> userData) async {
     final db = await _dbService.getDatabaseInstance();
-    return await db!.insert('USER', userData);
+    return await db!.insert('USER', userData, conflictAlgorithm: ConflictAlgorithm.replace,);
   }
 
   Future<Map<String, dynamic>?> getUserByEmail(String email) async {

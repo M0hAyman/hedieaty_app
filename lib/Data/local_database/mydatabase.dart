@@ -27,15 +27,16 @@ class MyLocalDatabaseService {
         // Create Users table
         db.execute('''
         CREATE TABLE IF NOT EXISTS 'USER'(
-          'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
+          'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           'NAME' TEXT NOT NULL,
           'EMAIL' TEXT NOT NULL,
-          'PASSWORD' TEXT NOT NULL,
-          'PASSWORDRESET' BOOLEAN NOT NULL,
           'PHONENUMBER' TEXT NOT NULL,
           'PREFERENCE' TEXT NOT NULL
           )
           ''');
+        // Removed those fields from the table recently need a rebuild! to update the table
+        //          'PASSWORD' TEXT NOT NULL,
+        //           'PASSWORDRESET' BOOLEAN NOT NULL,
         print("User table created");
         // Create Events table
         await db.execute('''

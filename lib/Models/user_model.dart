@@ -1,5 +1,5 @@
 class User {
-  final String id;
+  final String id;   //Maybe Firebase UID
   final String name;
   final String email;
   final String phoneNumber;
@@ -33,4 +33,27 @@ class User {
       'preference': preference,
     };
   }
+
+  // Convert SQFlite data to User object
+  factory User.fromSQFlite(Map<String, dynamic> data) {
+    return User(
+      id: data['id'],
+      name: data['name'],
+      email: data['email'],
+      phoneNumber: data['phoneNumber'],
+      preference: data['preference'],
+    );
+  }
+
+  // Convert User object to SQFlite data
+  Map<String, dynamic> toSQFlite() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'preference': preference,
+    };
+  }
 }
+

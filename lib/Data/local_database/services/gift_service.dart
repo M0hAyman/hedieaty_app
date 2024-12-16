@@ -1,5 +1,7 @@
 
 
+import 'package:sqflite/sqflite.dart';
+
 import '../mydatabase.dart';
 
 class GiftService {
@@ -7,7 +9,7 @@ class GiftService {
 
   Future<int> insertGift(Map<String, dynamic> giftData) async {
     final db = await _dbService.getDatabaseInstance();
-    return await db!.insert('GIFTS', giftData);
+    return await db!.insert('GIFTS', giftData, conflictAlgorithm: ConflictAlgorithm.replace,);
   }
 
   Future<List<Map<String, dynamic>>> getGiftsByEventId(int eventId) async {
