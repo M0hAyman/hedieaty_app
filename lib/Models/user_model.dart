@@ -1,59 +1,36 @@
-class User {
-  final String id;   //Maybe Firebase UID
+class UserModel {     // class name changed as the name User was conflicting with the User class from Firebase Auth
+  final String id;   //Firebase UID
   final String name;
   final String email;
   final String phoneNumber;
-  final String preference;
 
-  User({
+  UserModel({
     required this.id,
     required this.name,
     required this.email,
     required this.phoneNumber,
-    required this.preference,
   });
 
   // Convert Firestore data to User object
-  factory User.fromFirestore(Map<String, dynamic> data, String id) {
-    return User(
+  factory UserModel.fromFirestore(Map<String, dynamic> data, String id) {
+    return UserModel(
       id: id,
-      name: data['name'],
-      email: data['email'],
-      phoneNumber: data['phoneNumber'],
-      preference: data['preference'],
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      phoneNumber: data['phoneNumber'] ?? '',
     );
   }
 
   // Convert User object to Firestore data
   Map<String, dynamic> toFirestore() {
     return {
+      'id': id, // changed 'id' to 'uid' to match the Firestore document field
       'name': name,
       'email': email,
       'phoneNumber': phoneNumber,
-      'preference': preference,
     };
   }
 
-  // Convert SQFlite data to User object
-  factory User.fromSQFlite(Map<String, dynamic> data) {
-    return User(
-      id: data['id'],
-      name: data['name'],
-      email: data['email'],
-      phoneNumber: data['phoneNumber'],
-      preference: data['preference'],
-    );
-  }
 
-  // Convert User object to SQFlite data
-  Map<String, dynamic> toSQFlite() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'phoneNumber': phoneNumber,
-      'preference': preference,
-    };
-  }
 }
 

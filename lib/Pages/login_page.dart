@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hedieaty_app/CustomWidgets/main_navigation_bar.dart';
 import 'package:hedieaty_app/Pages/register_page.dart';
 
+import '../CustomWidgets/custom_text_field.dart';
+import '../Data/firebase/firebase_auth_service.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -16,18 +19,22 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final AuthService _authService = AuthService();
 
-  Future<void> _login() async {
+  bool _isPasswordVisible = false;
+
+  Future<void> _handleLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        // Call the login method from AuthService
+        final User? user = await _authService.login(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        final user = userCredential.user;
         if (user != null) {
+          //print('User: ${user.displayName ?? 'User'} logged in');
+          // Navigate to the Main Navigation Bar screen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -45,6 +52,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +72,11 @@ class _LoginPageState extends State<LoginPage> {
                   child: Icon(Icons.lock, size: 50, color: Colors.white),
                 ),
                 const SizedBox(height: 40),
-                TextFormField(
+                CustomTextField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email),
-                  ),
                   keyboardType: TextInputType.emailAddress,
+                  labelText: "Email",
+                  icon: Icons.email,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
@@ -83,27 +88,36 @@ class _LoginPageState extends State<LoginPage> {
                   },
                 ),
                 const SizedBox(height: 20),
-                TextFormField(
+                CustomTextField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
+                  labelText: "Password",
+                  icon: Icons.lock,
+                  obscureText: !_isPasswordVisible,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
                   ),
-                  obscureText: true,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Password is required';
                     }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                    if (value.trim().length < 6) {
+                      return 'Password must be at least 6 characters long';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: _login,
+                  onPressed: _handleLogin,
                   child: const Text('Login'),
                 ),
                 const SizedBox(height: 10),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hedieaty_app/Data/firebase/firebase_auth_service.dart';
+
+import '../CustomWidgets/custom_text_field.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -10,14 +11,16 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  //final FirebaseAuth _auth = FirebaseAuth.instance;
+  //final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final _formKey = GlobalKey<FormState>(); // Form key for validation
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+
+  final AuthService _authService = AuthService();
 
   bool _isPasswordVisible = false;
   bool _isLoading = false;
@@ -34,20 +37,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       // Firebase Authentication
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      await _authService.registerUser(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
       );
-
-      String uid = userCredential.user?.uid ?? "";
-
-      // Save to Firestore
-      await _firestore.collection('users').doc(uid).set({
-        'id': uid,
-        'name': _nameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'phone': _phoneController.text.trim(),
-      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Registration successful!")),
@@ -92,10 +87,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Column(
+                          const Column(
                             children: [
                               Icon(Icons.person_add, size: 60, color: Colors.blueAccent),
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10),
                               Text(
                                 "Create Your Account",
                                 style: TextStyle(
@@ -104,20 +99,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                   color: Colors.blueAccent,
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20),
                             ],
                           ),
 
                           // Name field
-                          TextFormField(
+                          CustomTextField(
                             controller: _nameController,
-                            decoration: InputDecoration(
-                              labelText: "Name",
-                              prefixIcon: const Icon(Icons.person),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
+                            labelText: "Name",
+                            icon: Icons.person,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Name is required';
@@ -128,16 +118,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           const SizedBox(height: 16),
 
                           // Email field
-                          TextFormField(
+                          CustomTextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              labelText: "Email",
-                              prefixIcon: const Icon(Icons.email),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
+                            labelText: "Email",
+                            icon: Icons.email,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Email is required';
@@ -151,16 +136,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           const SizedBox(height: 16),
 
                           // Phone field
-                          TextFormField(
+                          CustomTextField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
-                            decoration: InputDecoration(
-                              labelText: "Phone Number",
-                              prefixIcon: const Icon(Icons.phone),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
+                            labelText: "Phone Number",
+                            icon: Icons.phone,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Phone number is required';
@@ -174,27 +154,22 @@ class _RegisterPageState extends State<RegisterPage> {
                           const SizedBox(height: 16),
 
                           // Password field
-                          TextFormField(
+                          CustomTextField(
                             controller: _passwordController,
+                            labelText: "Password",
+                            icon: Icons.lock,
                             obscureText: !_isPasswordVisible,
-                            decoration: InputDecoration(
-                              labelText: "Password",
-                              prefixIcon: const Icon(Icons.lock),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _isPasswordVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _isPasswordVisible = !_isPasswordVisible;
-                                  });
-                                },
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
                               ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
