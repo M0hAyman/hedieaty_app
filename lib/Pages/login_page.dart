@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hedieaty_app/CustomWidgets/main_navigation_bar.dart';
 import 'package:hedieaty_app/Pages/register_page.dart';
-
 import '../CustomWidgets/custom_text_field.dart';
 import '../Data/firebase/firebase_auth_service.dart';
+import '../Models/user_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -27,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState?.validate() ?? false) {
       try {
         // Call the login method from AuthService
-        final User? user = await _authService.login(
+        final UserModel? user = await _authService.login(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
@@ -39,15 +38,19 @@ class _LoginPageState extends State<LoginPage> {
             context,
             MaterialPageRoute(
               builder: (context) => MainNavigationBar(
-                userName: user.displayName ?? 'User',
-                userEmail: user.email!,
+                userName: user.name,
+                userEmail: user.email,
               ),
             ),
           );
-        }
-      } on FirebaseAuthException catch (e) {
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User not found')),
+          );
+          }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Authentication failed')),
+          SnackBar(content: Text('$e Authentication failed')),
         );
       }
     }

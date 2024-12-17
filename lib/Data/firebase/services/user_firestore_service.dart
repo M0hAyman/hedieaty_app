@@ -11,6 +11,24 @@ class UserFirestoreService {
     await userCollection.doc(user.id).set(user.toFirestore());
   }
 
+  // Fetch a user by UID
+  Future<UserModel?> getUserByUid(String uid) async {
+    try {
+      // Fetch the document directly using the UID
+      final DocumentSnapshot doc = await userCollection.doc(uid).get();
+
+      if (doc.exists) {
+        // Parse the Firestore data into a UserModel object
+        return UserModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+      } else {
+        return null; // User document not found
+      }
+    } catch (e) {
+      throw Exception("Error fetching user: $e");
+    }
+  }
+
+
   // Fetch all users
   Future<List<UserModel>> getAllUsers() async {
     QuerySnapshot snapshot = await userCollection.get();

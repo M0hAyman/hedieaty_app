@@ -24,18 +24,18 @@ class AuthService {
         phoneNumber: phone.trim(),
       );
       await _userFirestoreService.addUser(newUser);
-      // Update the displayName
-      await userCredential.user?.updateDisplayName(name);
-      await userCredential.user?.reload(); // Refresh the user data
+      // Update the displayName //No need anymore
+      //await userCredential.user?.updateDisplayName(name);
+      //await userCredential.user?.reload(); // Refresh the user data
 
-      print('User registered: ${userCredential.user?.displayName}');
+      //print('User registered: ${userCredential.user?.displayName}');
     } on FirebaseAuthException catch (e) {
       throw Exception(e.message ?? 'Registration failed');
     }
 
   }
   // Login function
-  Future<User?> login({
+  Future<UserModel?> login({
     required String email,
     required String password,
   }) async {
@@ -46,8 +46,17 @@ class AuthService {
         password: password.trim(),
       );
 
+      // Fetch the user data using the UID
+      final String uid = userCredential.user?.uid ?? "";
+      final UserModel? user = await _userFirestoreService.getUserByUid(uid);
+
+      if (user != null) {
+        return user; // Return the user object if found
+      } else {
+        throw Exception("User document not found");
+      }
       // Return the user object if login is successful
-      return userCredential.user;
+      //return userCredential.user;
     } on FirebaseAuthException catch (e) {
       // Throw the error message to be handled by the UI
       throw Exception(e.message ?? 'Login failed');
