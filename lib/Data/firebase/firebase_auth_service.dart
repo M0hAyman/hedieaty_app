@@ -3,6 +3,9 @@ import 'package:hedieaty_app/Data/firebase/services/user_firestore_service.dart'
 import 'package:hedieaty_app/Models/user_model.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  // Getter for the current user
+  User? get currentUser => _auth.currentUser;
+
   final UserFirestoreService _userFirestoreService = UserFirestoreService();
   Future<void> registerUser({
     required String email,
@@ -61,5 +64,10 @@ class AuthService {
       // Throw the error message to be handled by the UI
       throw Exception(e.message ?? 'Login failed');
     }
+  }
+
+  //Not used till now!
+  Future<void> signOut() async {
+    await _auth.signOut();
   }
 }

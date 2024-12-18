@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Friend {
-  final String id;
-  final String userId;
-  final String friendId;
-  final String status; // pending, accepted, or blocked
-  final Timestamp createdAt;
+  final String id; // Firestore document ID
+  final String userId; // ID of the user who added the friend
+  final String friendId; // ID of the friend being added
+  final String status; // "pending", "accepted", or "blocked"
+  final Timestamp createdAt; // Timestamp of creation
 
   Friend({
     required this.id,
