@@ -37,7 +37,6 @@ class _HomePageState extends State<HomePage> {
       if (userId != null) {
         final friends = await _friendService.getAcceptedFriends(userId);
         final sentRequests = await _friendService.getPendingSentRequests(userId);
-        print('requests show: $sentRequests');
         final receivedRequests = await _friendService.getPendingReceivedRequests(userId);
         setState(() {
           _friends = friends;
@@ -53,6 +52,7 @@ class _HomePageState extends State<HomePage> {
       });
     }
   }
+
 
   Future<void> _acceptRequest(Friend request) async {
     try {
@@ -110,22 +110,28 @@ class _HomePageState extends State<HomePage> {
                   const Center(child: Text('No friends found.'))
                 else
                   ..._friends.map(
-                        (friend) => FriendListItem(
-                      name: friend.name,
-                      imagePath: 'assets/images/icon-user.png',
-                      eventCount: 0,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FriendEventListPage(
-                              friendName: friend.name,
+                        (friend) {
+                      final friendName = friend.fromId == _authService.currentUser?.uid
+                          ? friend.toName
+                          : friend.fromName;
+                      return FriendListItem(
+                        name: friendName,
+                        imagePath: 'assets/images/icon-user.png',
+                        eventCount: 0,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FriendEventListPage(
+                                friendName: friendName,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      );
+                    },
                   ),
+
                 const Divider(),
                 const Text(
                   'Pending Sent Requests',
@@ -136,10 +142,11 @@ class _HomePageState extends State<HomePage> {
                 else
                   ..._pendingSentRequests.map(
                         (request) => ListTile(
-                      title: Text(request.name),
+                      title: Text(request.toName),
                       subtitle: const Text('Waiting for approval...'),
                     ),
                   ),
+
                 const Divider(),
                 const Text(
                   'Pending Received Requests',
@@ -150,7 +157,7 @@ class _HomePageState extends State<HomePage> {
                 else
                   ..._pendingReceivedRequests.map(
                         (request) => ListTile(
-                      title: Text(request.name),
+                      title: Text(request.fromName),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

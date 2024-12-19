@@ -4,24 +4,29 @@ import 'package:hedieaty_app/CustomWidgets/gradient_container.dart';
 //import 'package:hedieaty_app/home_page.dart';
 import 'package:hedieaty_app/Pages/login_page.dart';
 
-import 'Data/local_database/services/event_service.dart';
-import 'Data/local_database/services/user_service.dart';
+
 import 'firebase_options.dart';
 
 // void main() async {
-//   // // Ensure all Flutter bindings and initialization steps are complete
-//   // WidgetsFlutterBinding.ensureInitialized();
-//   //
-//   //  final eventService = EventService();
-//   //  await eventService.insertEvent({
-//   //    'NAME': 'Birthday Party',
-//   //    'DATE': '2022-12-25',
-//   //    'LOCATION': '123 Main St, New York, NY',
-//   //    'DESCRIPTION': 'Come celebrate my birthday!',
-//   //    'USER_ID': 1
-//   //  });
-//   //  final event = await eventService.getEventsByUserId(1);
-//   //  print(event);
+//   // Ensure all Flutter bindings and initialization steps are complete
+//   WidgetsFlutterBinding.ensureInitialized();
+//
+//
+//   final localDB = MyLocalDatabaseService();
+//   await localDB.initialize();
+//   await localDB.resetDatabase();
+//    final eventService = EventService();
+//    await eventService.insertEvent({
+//      'NAME': 'Birthday Party Test 1',
+//      'CATEGORY': 'Birthday',
+//      'DESCRIPTION': 'Come celebrate my birthday!',
+//      'DATE': '2022-12-25',
+//      'LOCATION': '123 Main St, New York, NY',
+//      'USER_ID': 'dyYryYryYsw'
+//
+//    });
+//    final event = await eventService.getEventsByUserId(1);
+//    print(event);
 //
 //   // Run the application
 //   runApp(const MyApp());

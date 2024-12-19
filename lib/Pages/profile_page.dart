@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
+  final String userId;
   final String userName;
   final String userEmail;
 
   const ProfilePage({
     super.key,
+    required this.userId,
     required this.userName,
     required this.userEmail,
   });

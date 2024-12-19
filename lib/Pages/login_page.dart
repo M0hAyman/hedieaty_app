@@ -38,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
             context,
             MaterialPageRoute(
               builder: (context) => MainNavigationBar(
+                userId: user.id,
                 userName: user.name,
                 userEmail: user.email,
               ),

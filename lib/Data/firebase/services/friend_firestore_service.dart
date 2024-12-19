@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../../Models/friend_model.dart';
-
 
 class FriendFirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -25,32 +23,36 @@ class FriendFirestoreService {
 
       final toUser = querySnapshot.docs.first;
 
-      // Add a friend request to the recipient's `friendRequests`
+      // Fetch the sender's user details
+      final fromUser = await _firestore.collection('users').doc(fromUserId).get();
+
+      if (!fromUser.exists) {
+        throw Exception('Sender user not found.');
+      }
+
+      // Prepare friend request data
       final requestData = {
         'fromId': fromUserId,
         'toId': toUser.id,
-        'name': toUser['name'], // Include the friend's name
+        'fromName': fromUser['name'], // Sender's name
+        'toName': toUser['name'], // Receiver's name
         'status': 'pending',
         'createdAt': Timestamp.now(),
       };
 
-      // Add the friend request to the recipient's `friendRequests`
+      // Add the request to the receiver's `friendRequests` collection
       await _firestore
           .collection('users')
           .doc(toUser.id)
           .collection('friendRequests')
           .add(requestData);
 
-      // Reflect the same request on the sender's side as "pending"
+      // Add the request to the sender's `friendRequests` collection
       await _firestore
           .collection('users')
           .doc(fromUserId)
           .collection('friendRequests')
-          .add({
-        ...requestData,
-        'fromId': fromUserId, // Ensure clarity in the sender's perspective
-        'toId': toUser.id,
-      });
+          .add(requestData);
     } catch (e) {
       throw Exception('Error sending friend request: $e');
     }
@@ -65,14 +67,15 @@ class FriendFirestoreService {
           .collection('acceptedFriends')
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => Friend.fromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) {
+        return Friend.fromFirestore(doc);
+      }).toList();
     } catch (e) {
       throw Exception('Error fetching accepted friends: $e');
     }
   }
 
+  // Handle a friend request (accept or reject)
   Future<void> handleFriendRequest({
     required String requestId,
     required String currentUserId,
@@ -80,31 +83,36 @@ class FriendFirestoreService {
     required bool accept,
   }) async {
     try {
-      // Access the current user's friend request
       final requestRef = _firestore
           .collection('users')
           .doc(currentUserId)
           .collection('friendRequests')
           .doc(requestId);
 
-      // Update the status in the current user's request
+      final requestDoc = await requestRef.get();
+
+      if (!requestDoc.exists) {
+        throw Exception('Friend request not found.');
+      }
+
+      final requestData = requestDoc.data();
+
       if (accept) {
-        // Update status to accepted in the current user's friendRequests
+        // Update status to accepted
         await requestRef.update({'status': 'accepted'});
 
-        // Add to both users' acceptedFriends sub-collections
-        final friendDoc = await _firestore.collection('users').doc(friendId).get();
-
+        // Add to both users' acceptedFriends
         await _firestore
             .collection('users')
             .doc(currentUserId)
             .collection('acceptedFriends')
             .doc(friendId)
             .set({
-          'id': friendId,
-          'name': friendDoc['name'],
-          'email': friendDoc['email'],
-          'phone': friendDoc['phone'],
+          'fromId': currentUserId,
+          'toId': friendId,
+          'fromName': requestData!['fromName'],
+          'toName': requestData['toName'],
+          'createdAt': Timestamp.now(),
         });
 
         await _firestore
@@ -113,17 +121,100 @@ class FriendFirestoreService {
             .collection('acceptedFriends')
             .doc(currentUserId)
             .set({
-          'id': currentUserId,
-          'name': friendDoc['name'],
-          'email': friendDoc['email'],
-          'phone': friendDoc['phone'],
+          'fromId': friendId,
+          'toId': currentUserId,
+          'fromName': requestData['toName'], // Reverse perspective
+          'toName': requestData['fromName'], // Reverse perspective
+          'createdAt': Timestamp.now(),
         });
       } else {
-        // Reject: delete the request in both users' friendRequests
+        // Reject request
         await requestRef.delete();
       }
     } catch (e) {
       throw Exception('Error handling friend request: $e');
+    }
+  }
+
+  // Accept a friend request
+  Future<void> acceptFriendRequest(Friend request) async {
+    try {
+
+      final batch = _firestore.batch();
+
+      print('Request ID: ${request.id}');
+      print('From ID: ${request.fromId}');
+      print('To ID: ${request.toId}');
+
+      // Current user's request reference
+      final currentUserRequestRef = _firestore
+          .collection('users')
+          .doc(request.fromId)
+          .collection('friendRequests')
+          .doc(request.id);
+
+      // Friend's request reference
+      final friendRequestRef = _firestore
+          .collection('users')
+          .doc(request.toId)
+          .collection('friendRequests')
+          .doc(request.id);
+
+      final currentUserRequestDoc = await currentUserRequestRef.get();
+      final friendRequestDoc = await friendRequestRef.get();
+
+      if (!currentUserRequestDoc.exists || !friendRequestDoc.exists) {
+        throw Exception('Friend request document not found.');
+      }
+
+      print('Current User Request Path: ${currentUserRequestRef.path}');
+      print('Friend Request Path: ${friendRequestRef.path}');
+
+      // Update status to accepted
+      batch.update(currentUserRequestRef, {'status': 'accepted'});
+      batch.update(friendRequestRef, {'status': 'accepted'});
+
+      // Add to both users' accepted friends list
+      batch.set(
+        _firestore
+            .collection('users')
+            .doc(request.fromId)
+            .collection('acceptedFriends')
+            .doc(request.toId),
+        {
+          'fromId': request.fromId,
+          'toId': request.toId,
+          'fromName': request.fromName,
+          'toName': request.toName,
+          'createdAt': Timestamp.now(),
+        },
+      );
+
+      batch.set(
+        _firestore
+            .collection('users')
+            .doc(request.toId)
+            .collection('acceptedFriends')
+            .doc(request.fromId),
+        {
+          'fromId': request.toId,
+          'toId': request.fromId,
+          'fromName': request.toName,
+          'toName': request.fromName,
+          'createdAt': Timestamp.now(),
+        },
+      );
+
+
+      // Commit the batch
+      try {
+        await batch.commit();
+      } catch (e) {
+        throw Exception('Failed to commit batch: $e');
+      }
+
+    } catch (e) {
+      throw Exception('Failed to accept friend request: $e');
     }
   }
 
@@ -138,15 +229,13 @@ class FriendFirestoreService {
           .where('fromId', isEqualTo: userId)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => Friend.fromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => Friend.fromFirestore(doc)).toList();
     } catch (e) {
       throw Exception('Error fetching pending sent requests: $e');
     }
   }
 
-// Fetch all pending requests received by the user
+  // Fetch all pending requests received by the user
   Future<List<Friend>> getPendingReceivedRequests(String userId) async {
     try {
       final querySnapshot = await _firestore
@@ -157,71 +246,23 @@ class FriendFirestoreService {
           .where('toId', isEqualTo: userId)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => Friend.fromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => Friend.fromFirestore(doc)).toList();
     } catch (e) {
       throw Exception('Error fetching pending received requests: $e');
-    }
-  }
-
-  // Accept a friend request
-  Future<void> acceptFriendRequest(Friend request) async {
-    try {
-      final batch = _firestore.batch();
-
-      // Update the friend request status to 'accepted'
-      final currentUserRequestRef = _firestore
-          .collection('users')
-          .doc(request.userId)
-          .collection('friendRequests')
-          .doc(request.id);
-      batch.update(currentUserRequestRef, {'status': 'accepted'});
-
-      // Create or update the friend relationship in the recipient's collection
-      final friendRequestRef = _firestore
-          .collection('users')
-          .doc(request.friendId)
-          .collection('friendRequests')
-          .doc(request.id);
-      batch.update(friendRequestRef, {'status': 'accepted'});
-
-      // Commit the batch operation
-      await batch.commit();
-    } catch (e) {
-      print('Error accepting friend request: $e');
-      throw Exception('Failed to accept friend request');
     }
   }
 
   // Reject a friend request
   Future<void> rejectFriendRequest(Friend request) async {
     try {
-      final batch = _firestore.batch();
-
-      // Update the friend request status to 'rejected'
-      final currentUserRequestRef = _firestore
+      await _firestore
           .collection('users')
-          .doc(request.userId)
+          .doc(request.toId)
           .collection('friendRequests')
-          .doc(request.id);
-      batch.update(currentUserRequestRef, {'status': 'rejected'});
-
-      // Update the status in the friend's collection
-      final friendRequestRef = _firestore
-          .collection('users')
-          .doc(request.friendId)
-          .collection('friendRequests')
-          .doc(request.id);
-      batch.update(friendRequestRef, {'status': 'rejected'});
-
-      // Commit the batch operation
-      await batch.commit();
+          .doc(request.id)
+          .delete();
     } catch (e) {
-      print('Error rejecting friend request: $e');
-      throw Exception('Failed to reject friend request');
+      throw Exception('Failed to reject friend request: $e');
     }
   }
-
-
 }

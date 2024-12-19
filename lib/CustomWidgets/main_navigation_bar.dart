@@ -6,11 +6,13 @@ import 'package:hedieaty_app/Pages/pledged_gifts_page.dart';
 import 'package:hedieaty_app/Pages/profile_page.dart';
 
 class MainNavigationBar extends StatefulWidget {
+  final String userId;
   final String userName;
   final String userEmail;
 
   const MainNavigationBar({
     super.key,
+    required this.userId,
     required this.userName,
     required this.userEmail,
   });
@@ -31,9 +33,10 @@ class _MainNavigationState extends State<MainNavigationBar> {
     super.initState();
     _pages = [
       const HomePage(),
-      const EventListPage(),
+      EventListPage(userId: widget.userId),
       const PledgedGiftsPage(),
       ProfilePage(
+        userId: widget.userId,
         userName: widget.userName,
         userEmail: widget.userEmail,
       ),

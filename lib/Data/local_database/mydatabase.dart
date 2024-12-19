@@ -24,29 +24,16 @@ class MyLocalDatabaseService {
       databasesPath,
       version: dbversion,
       onCreate: (db, version) async {
-        // Create Users table
-        db.execute('''
-        CREATE TABLE IF NOT EXISTS 'USER'(
-          'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-          'NAME' TEXT NOT NULL,
-          'EMAIL' TEXT NOT NULL,
-          'PHONENUMBER' TEXT NOT NULL,
-          'PREFERENCE' TEXT NOT NULL
-          )
-          ''');
-        // Removed those fields from the table recently need a rebuild! to update the table
-        //          'PASSWORD' TEXT NOT NULL,
-        //           'PASSWORDRESET' BOOLEAN NOT NULL,
-        print("User table created");
         // Create Events table
         await db.execute('''
           CREATE TABLE IF NOT EXISTS EVENTS (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
             NAME TEXT NOT NULL,
+            CATEGORY TEXT NOT NULL,
+            DESCRIPTION TEXT NOT NULL,
             DATE TEXT NOT NULL,
             LOCATION TEXT NOT NULL,
-            DESCRIPTION TEXT NOT NULL,
-            USER_ID INTEGER NOT NULL,
+            USER_ID TEXT NOT NULL,
             FOREIGN KEY (USER_ID) REFERENCES USER(ID)
           )
         ''');
@@ -66,18 +53,6 @@ class MyLocalDatabaseService {
           )
         ''');
         print("Gifts table created");
-
-        // Create Friends table
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS FRIENDS (
-            USER_ID INTEGER NOT NULL,
-            FRIEND_ID INTEGER NOT NULL,
-            PRIMARY KEY (USER_ID, FRIEND_ID),
-            FOREIGN KEY (USER_ID) REFERENCES USER(ID),
-            FOREIGN KEY (FRIEND_ID) REFERENCES USER(ID)
-          )
-        ''');
-        print("Friends table created");
 
         print("All required tables have been created.");
       },
@@ -117,6 +92,7 @@ class MyLocalDatabaseService {
 
   //Reset the database by deleting the database file and recreating it
   Future<void> resetDatabase() async {
+    print('reseting.......');
     if (_mydb == null || !_mydb!.isOpen) {
       print('Database is null');
       return;

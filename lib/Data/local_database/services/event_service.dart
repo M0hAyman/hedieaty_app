@@ -10,7 +10,7 @@ class EventService {
     return await db!.insert('EVENTS', eventData, conflictAlgorithm: ConflictAlgorithm.replace,);
   }
 
-  Future<List<Map<String, dynamic>>> getEventsByUserId(int userId) async {
+  Future<List<Map<String, dynamic>>> getEventsByUserId(String userId) async {
     final db = await _dbService.getDatabaseInstance();
     return await db!.query('EVENTS', where: 'USER_ID = ?', whereArgs: [userId]);
   }
