@@ -4,13 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:hedieaty_app/main.dart' as app;
 
 void main() {
-  // Register the Integration Test driver
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('Login and Navigate to Profile Page Test', (WidgetTester tester) async {
     // Launch the app
     app.main();
     await tester.pumpAndSettle();
+
+    // Wait for the "Login" text to appear with a timeout
+    const timeout = Duration(seconds: 10);
+    final endTime = DateTime.now().add(timeout);
+
+    while (find.text('Login').evaluate().isEmpty) {
+      await tester.pump();
+      if (DateTime.now().isAfter(endTime)) {
+        throw TestFailure('Login page not found within $timeout');
+      }
+    }
 
     // Verify Login Page is displayed
     expect(find.text('Login'), findsOneWidget);
@@ -28,6 +38,17 @@ void main() {
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
+    // Wait for Main Navigation Bar to appear
+    final navBarTimeout = Duration(seconds: 10);
+    final navBarEndTime = DateTime.now().add(navBarTimeout);
+
+    while (find.byType(BottomNavigationBar).evaluate().isEmpty) {
+      await tester.pump();
+      if (DateTime.now().isAfter(navBarEndTime)) {
+        throw TestFailure('Main Navigation Bar not found within $navBarTimeout');
+      }
+    }
+
     // Verify that Main Navigation Bar is displayed
     expect(find.byType(BottomNavigationBar), findsOneWidget);
 
@@ -37,6 +58,16 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify that the Profile Page is displayed
+    final profileTimeout = Duration(seconds: 10);
+    final profileEndTime = DateTime.now().add(profileTimeout);
+
+    while (find.text('Profile').evaluate().isEmpty) {
+      await tester.pump();
+      if (DateTime.now().isAfter(profileEndTime)) {
+        throw TestFailure('Profile Page not found within $profileTimeout');
+      }
+    }
+
     expect(find.text('Profile'), findsOneWidget); // Adjust text as per your Profile Page
   });
 }
