@@ -1,6 +1,6 @@
 // friend_event_list_page.dart
 import 'package:flutter/material.dart';
-import 'gift_list_page.dart';
+
 
 class FriendEventListPage extends StatelessWidget {
   final String friendName;
@@ -21,13 +21,13 @@ class FriendEventListPage extends StatelessWidget {
             subtitle: Text(
                 'Status: ${index % 3 == 0 ? "Past" : index % 2 == 0 ? "Upcoming" : "Current"}'),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      GiftListPage(eventName: 'Event $index for $friendName'),
-                ),
-              );
+              //Navigator.push(
+               // context,
+               // MaterialPageRoute(
+                //  builder: (context) =>
+                      //GiftListPage(eventName: 'Event $index for $friendName'),
+                //),
+              //);
             },
           );
         },

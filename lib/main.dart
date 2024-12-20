@@ -5,6 +5,9 @@ import 'package:hedieaty_app/CustomWidgets/gradient_container.dart';
 import 'package:hedieaty_app/Pages/login_page.dart';
 
 
+// import 'Data/local_database/services/gift_service.dart';
+// import 'Data/local_database/mydatabase.dart';
+// import 'Data/local_database/services/event_service.dart';
 import 'firebase_options.dart';
 
 // void main() async {
@@ -16,7 +19,9 @@ import 'firebase_options.dart';
 //   await localDB.initialize();
 //   await localDB.resetDatabase();
 //    final eventService = EventService();
+//    final giftService = GiftService();
 //    await eventService.insertEvent({
+//      'EVENT_FIREBASE_ID': 'AnyFiReBaseId1',
 //      'NAME': 'Birthday Party Test 1',
 //      'CATEGORY': 'Birthday',
 //      'DESCRIPTION': 'Come celebrate my birthday!',
@@ -25,8 +30,20 @@ import 'firebase_options.dart';
 //      'USER_ID': 'dyYryYryYsw'
 //
 //    });
-//    final event = await eventService.getEventsByUserId(1);
-//    print(event);
+//
+//    await giftService.insertGift({
+//      'GIFT_FIREBASE_ID': 'AnyFiReBaseId1',
+//      'NAME': 'Gift 1',
+//      'DESCRIPTION': 'Gift 1 description',
+//      'CATEGORY': 'Gift',
+//      'PRICE': 50.00,
+//      'PLEDGED_BY': 'John Doe',
+//      'IMG_URL': 'https://via.placeholder.com/150',
+//      'EVENT_ID': 1
+//    });
+//
+//    //final event = await eventService.getEventsByUserId(1);
+//    //print(event);
 //
 //   // Run the application
 //   runApp(const MyApp());

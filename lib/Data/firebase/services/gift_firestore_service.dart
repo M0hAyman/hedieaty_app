@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../Models/gift_model.dart';
 
 
-class GiftService {
+class GiftFirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'gifts';
 

@@ -7,6 +7,24 @@ import '../mydatabase.dart';
 class GiftService {
   final MyLocalDatabaseService _dbService = MyLocalDatabaseService();
 
+  Future<int> pledgeGift(int giftId, String userId) async {
+    final db = await _dbService.getDatabaseInstance();
+    return await db!.update(
+      'GIFTS',
+      {'IS_PLEDGED': 1, 'PLEDGED_BY': userId},
+      where: 'ID = ?',
+      whereArgs: [giftId],
+    );
+  }
+  Future<int> unpledgeGift(int giftId) async {
+    final db = await _dbService.getDatabaseInstance();
+    return await db!.update(
+      'GIFTS',
+      {'IS_PLEDGED': 0, 'PLEDGED_BY': null},
+      where: 'ID = ?',
+      whereArgs: [giftId],
+    );
+  }
   Future<int> insertGift(Map<String, dynamic> giftData) async {
     final db = await _dbService.getDatabaseInstance();
     return await db!.insert('GIFTS', giftData, conflictAlgorithm: ConflictAlgorithm.replace,);

@@ -28,13 +28,13 @@ class MyLocalDatabaseService {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS EVENTS (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            EVENT_FIREBASE_ID TEXT NOT NULL, -- From firebase
             NAME TEXT NOT NULL,
             CATEGORY TEXT NOT NULL,
             DESCRIPTION TEXT NOT NULL,
             DATE TEXT NOT NULL,
             LOCATION TEXT NOT NULL,
-            USER_ID TEXT NOT NULL,
-            FOREIGN KEY (USER_ID) REFERENCES USER(ID)
+            USER_ID TEXT NOT NULL -- From firebase
           )
         ''');
         print("Events table created");
@@ -43,11 +43,15 @@ class MyLocalDatabaseService {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS GIFTS (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            GIFT_FIREBASE_ID TEXT NOT NULL, -- From firebase
             NAME TEXT NOT NULL,
             DESCRIPTION TEXT NOT NULL,
             CATEGORY TEXT NOT NULL,
             PRICE REAL NOT NULL,
-            STATUS TEXT NOT NULL,
+            IMG_URL TEXT, -- Nullable for optional image
+            IS_PLEDGED INTEGER DEFAULT 0, -- Boolean: 0 = not pledged, 1 = pledged
+            PLEDGED_BY TEXT NOT NULL, -- Nullable: user ID of the pledger
+            USER_ID TEXT NOT NULL, -- Owner user ID from firebase
             EVENT_ID INTEGER NOT NULL,
             FOREIGN KEY (EVENT_ID) REFERENCES EVENTS(ID)
           )

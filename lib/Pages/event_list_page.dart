@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hedieaty_app/Pages/add_event_page.dart';
 //import '../Data/event_service.dart'; // Update the path to EventService
 import '../Data/local_database/services/event_service.dart';
+import 'gift_list_page.dart';
 
 
 class EventListPage extends StatefulWidget {
@@ -78,6 +79,17 @@ class _EventListPageState extends State<EventListPage> {
           return ListTile(
             title: Text(event['NAME']),
             subtitle: Text('Date: ${event['DATE']}'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GiftListPage(
+                    eventId: event['ID'],
+                    userId: widget.userId,
+                  ),
+                ),
+              );
+            },
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

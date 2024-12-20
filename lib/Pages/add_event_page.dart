@@ -57,6 +57,7 @@ class _AddEditEventPageState extends State<AddEditEventPage> {
   void _saveEvent() {
     if (_formKey.currentState!.validate()) {
       Navigator.pop(context, {
+        'EVENT_FIREBASE_ID': 'temPiDiNtTatFiEld', // Include firebase ID
         'NAME': _nameController.text,
         'CATEGORY': _categoryController.text,
         'DESCRIPTION': _descriptionController.text,
