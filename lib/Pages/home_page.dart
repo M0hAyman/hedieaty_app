@@ -21,8 +21,6 @@ class _HomePageState extends State<HomePage> {
   final AuthService _authService = AuthService();
 
   List<Friend> _friends = [];
-  List<Friend> _pendingSentRequests = [];
-  List<Friend> _pendingReceivedRequests = [];
   bool _isLoading = true;
 
   @override
@@ -33,15 +31,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _fetchData() async {
     try {
-      final userId = _authService.currentUser?.uid; // Get the current user's ID
+      final userId = _authService.currentUser?.uid;
       if (userId != null) {
         final friends = await _friendService.getAcceptedFriends(userId);
-        final sentRequests = await _friendService.getPendingSentRequests(userId);
-        final receivedRequests = await _friendService.getPendingReceivedRequests(userId);
         setState(() {
           _friends = friends;
-          _pendingSentRequests = sentRequests;
-          _pendingReceivedRequests = receivedRequests;
           _isLoading = false;
         });
       }
@@ -50,31 +44,6 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _isLoading = false;
       });
-    }
-  }
-
-
-  Future<void> _acceptRequest(Friend request) async {
-    try {
-      await _friendService.acceptFriendRequest(request);
-      _fetchData(); // Refresh data
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Friend request accepted!')),
-      );
-    } catch (e) {
-      print('Error accepting friend request: $e');
-    }
-  }
-
-  Future<void> _rejectRequest(Friend request) async {
-    try {
-      await _friendService.rejectFriendRequest(request);
-      _fetchData(); // Refresh data
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Friend request rejected.')),
-      );
-    } catch (e) {
-      print('Error rejecting friend request: $e');
     }
   }
 
@@ -104,14 +73,16 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const Text(
                   'Accepted Friends',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 if (_friends.isEmpty)
                   const Center(child: Text('No friends found.'))
                 else
                   ..._friends.map(
                         (friend) {
-                      final friendName = friend.fromId == _authService.currentUser?.uid
+                      final friendName = friend.fromId ==
+                          _authService.currentUser?.uid
                           ? friend.toName
                           : friend.fromName;
                       return FriendListItem(
@@ -131,52 +102,10 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                   ),
-
-                const Divider(),
-                const Text(
-                  'Pending Sent Requests',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                if (_pendingSentRequests.isEmpty)
-                  const Center(child: Text('No pending requests sent.'))
-                else
-                  ..._pendingSentRequests.map(
-                        (request) => ListTile(
-                      title: Text(request.toName),
-                      subtitle: const Text('Waiting for approval...'),
-                    ),
-                  ),
-
-                const Divider(),
-                const Text(
-                  'Pending Received Requests',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                if (_pendingReceivedRequests.isEmpty)
-                  const Center(child: Text('No pending requests received.'))
-                else
-                  ..._pendingReceivedRequests.map(
-                        (request) => ListTile(
-                      title: Text(request.fromName),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.check),
-                            onPressed: () => _acceptRequest(request),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => _rejectRequest(request),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
-          const AddFriendButton(),
+          AddFriendButton(onFriendAdded: _fetchData), // Pass the callback here
         ],
       ),
     );

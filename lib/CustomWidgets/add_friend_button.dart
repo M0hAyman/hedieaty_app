@@ -5,13 +5,15 @@ import '../Data/firebase/services/friend_firestore_service.dart';
 
 
 class AddFriendButton extends StatelessWidget {
-  const AddFriendButton({super.key});
+  final VoidCallback onFriendAdded;
+
+  const AddFriendButton({super.key, required this.onFriendAdded});
 
   Future<void> _addFriend(BuildContext context) async {
-    final AuthService authService = AuthService();
-    final FriendFirestoreService friendService = FriendFirestoreService();
+    final AuthService _authService = AuthService();
+    final FriendFirestoreService _friendService = FriendFirestoreService();
 
-    final currentUser = authService.currentUser;
+    final currentUser = _authService.currentUser;
 
     if (currentUser == null) {
       // Show error if the user is not logged in
@@ -36,20 +38,19 @@ class AddFriendButton extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 final phoneNumber = phoneController.text.trim();
-
                 try {
-                  await friendService.sendFriendRequest(
-                    fromUserId: currentUser.uid,
+                  await _friendService.addFriend(
+                    fromUserId: _authService.currentUser!.uid,
                     phoneNumber: phoneNumber,
                   );
-
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Friend request sent successfully!')),
+                    const SnackBar(content: Text('Friend added successfully!')),
                   );
+                  onFriendAdded(); // Notify parent to refresh data
                 } catch (e) {
+                  print('Error adding friend: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
+                    const SnackBar(content: Text('Failed to add friend.')),
                   );
                 }
 

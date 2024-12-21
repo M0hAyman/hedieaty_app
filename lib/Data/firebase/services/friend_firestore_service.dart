@@ -4,8 +4,7 @@ import '../../../Models/friend_model.dart';
 class FriendFirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Send a friend request by phone number
-  Future<void> sendFriendRequest({
+  Future<void> addFriend({
     required String fromUserId,
     required String phoneNumber,
   }) async {
@@ -30,33 +29,45 @@ class FriendFirestoreService {
         throw Exception('Sender user not found.');
       }
 
-      // Prepare friend request data
-      final requestData = {
+      // Prepare friend data
+      final friendData = {
         'fromId': fromUserId,
         'toId': toUser.id,
-        'fromName': fromUser['name'], // Sender's name
-        'toName': toUser['name'], // Receiver's name
-        'status': 'pending',
+        'fromName': fromUser['name'],
+        'toName': toUser['name'],
         'createdAt': Timestamp.now(),
       };
 
-      // Add the request to the receiver's `friendRequests` collection
-      await _firestore
-          .collection('users')
-          .doc(toUser.id)
-          .collection('friendRequests')
-          .add(requestData);
+      // Add to both users' acceptedFriends subcollection
+      final batch = _firestore.batch();
 
-      // Add the request to the sender's `friendRequests` collection
-      await _firestore
-          .collection('users')
-          .doc(fromUserId)
-          .collection('friendRequests')
-          .add(requestData);
+      // Add to the current user's accepted friends
+      batch.set(
+        _firestore
+            .collection('users')
+            .doc(fromUserId)
+            .collection('acceptedFriends')
+            .doc(toUser.id),
+        friendData,
+      );
+
+      // Add to the friend's accepted friends
+      batch.set(
+        _firestore
+            .collection('users')
+            .doc(toUser.id)
+            .collection('acceptedFriends')
+            .doc(fromUserId),
+        friendData,
+      );
+
+      // Commit the batch
+      await batch.commit();
     } catch (e) {
-      throw Exception('Error sending friend request: $e');
+      throw Exception('Error adding friend: $e');
     }
   }
+
 
   // Fetch all accepted friends for the current user
   Future<List<Friend>> getAcceptedFriends(String userId) async {
@@ -145,7 +156,6 @@ class FriendFirestoreService {
       print('Request ID: ${request.id}');
       print('From ID: ${request.fromId}');
       print('To ID: ${request.toId}');
-
       // Current user's request reference
       final currentUserRequestRef = _firestore
           .collection('users')
@@ -213,9 +223,12 @@ class FriendFirestoreService {
         throw Exception('Failed to commit batch: $e');
       }
 
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Failed to accept friend request: $e');
+      print('StackTrace: $stackTrace');
       throw Exception('Failed to accept friend request: $e');
     }
+
   }
 
   // Fetch all pending requests sent by the user
