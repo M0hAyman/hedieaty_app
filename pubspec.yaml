@@ -42,12 +42,16 @@ dependencies:
   firebase_auth: ^5.3.3
   connectivity_plus: ^6.1.0
   cloud_firestore: ^5.5.0
+  lottie: ^3.2.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   integration_test:
     sdk: flutter
+
+  flutter_launcher_icons: ^0.14.2
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -57,7 +61,10 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon2.png"
 # The following section is specific to Flutter packages.
 flutter:
   # The following line ensures that the Material Icons font is
@@ -69,6 +76,8 @@ flutter:
   assets:
     - assets/images/logo.png
     - assets/images/icon-user.png
+    - assets/loading.json
+    - assets/images/app_icon2.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

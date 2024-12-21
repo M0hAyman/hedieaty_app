@@ -4,9 +4,8 @@ import '../Data/firebase/services/event_firestore_service.dart';
 import '../Data/local_database/services/event_service.dart';
 import 'gift_list_page.dart';
 
-
 class EventListPage extends StatefulWidget {
-  final String userId; // Add userId parameter
+  final String userId;
 
   const EventListPage({Key? key, required this.userId}) : super(key: key);
 
@@ -14,11 +13,11 @@ class EventListPage extends StatefulWidget {
   _EventListPageState createState() => _EventListPageState();
 }
 
-
 class _EventListPageState extends State<EventListPage> {
   final EventService _eventService = EventService();
   final EventFirestoreService _firestoreService = EventFirestoreService();
   List<Map<String, dynamic>> _events = [];
+  bool _isLoading = false; // Loading state
 
   @override
   void initState() {
@@ -27,10 +26,25 @@ class _EventListPageState extends State<EventListPage> {
   }
 
   Future<void> _fetchEvents() async {
-    final events = await _eventService.getEventsByUserId(widget.userId); // Use widget.userId
     setState(() {
-      _events = events;
+      _isLoading = true; // Start loading
     });
+
+    try {
+      final events = await _eventService.getEventsByUserId(widget.userId);
+      setState(() {
+        _events = events;
+      });
+    } catch (e) {
+      print('Error fetching events: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load events.')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
+    }
   }
 
   void _addOrEditEvent({Map<String, dynamic>? eventData}) async {
@@ -39,7 +53,7 @@ class _EventListPageState extends State<EventListPage> {
       MaterialPageRoute(
         builder: (context) => AddEditEventPage(
           eventData: eventData,
-          userId: widget.userId, // Pass userId
+          userId: widget.userId,
         ),
       ),
     );
@@ -76,6 +90,7 @@ class _EventListPageState extends State<EventListPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Event published to Firestore.')),
         );
+        _fetchEvents();
       }
     } catch (e) {
       print('Error publishing event: $e');
@@ -84,7 +99,6 @@ class _EventListPageState extends State<EventListPage> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -98,42 +112,58 @@ class _EventListPageState extends State<EventListPage> {
           ),
         ],
       ),
-      body: _events.isEmpty
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator()) // Show loading spinner
+          : _events.isEmpty
           ? const Center(child: Text("No events available."))
           : ListView.builder(
         itemCount: _events.length,
         itemBuilder: (context, index) {
           final event = _events[index];
-          return ListTile(
-            title: Text(event['NAME']),
-            subtitle: Text('Date: ${event['DATE']}'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => GiftListPage(
-                    eventId: event['ID'],
-                    userId: widget.userId,
+          final isPublished = event['EVENT_FIREBASE_ID'] != null && event['EVENT_FIREBASE_ID'].isNotEmpty;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            color: isPublished ? Colors.green.shade100 : Colors.white,
+            child: ListTile(
+              title: Text(event['NAME']),
+              subtitle: Text('Date: ${event['DATE']}'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GiftListPage(
+                      eventId: event['ID'],
+                      userId: widget.userId,
+                    ),
                   ),
-                ),
-              );
-            },
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => _addOrEditEvent(eventData: event),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _deleteEvent(event['ID']),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.cloud_upload),
-                  onPressed: () => _publishEvent(event),
-                ),
-              ],
+                );
+              },
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _addOrEditEvent(eventData: event),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _deleteEvent(event['ID']),
+                  ),
+                  IconButton(
+                    icon: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: isPublished
+                          ? const Icon(Icons.check_circle, color: Colors.green, key: ValueKey('published'))
+                          : const Icon(Icons.cloud_upload, color: Colors.grey, key: ValueKey('not_published')),
+                    ),
+                    onPressed: () async {
+                      await _publishEvent(event);
+                      setState(() {}); // Trigger re-build to show animation
+                    },
+                  ),
+                ],
+              ),
             ),
           );
         },
