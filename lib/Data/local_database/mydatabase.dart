@@ -28,7 +28,7 @@ class MyLocalDatabaseService {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS EVENTS (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            EVENT_FIREBASE_ID TEXT NOT NULL, -- From firebase
+            EVENT_FIREBASE_ID TEXT, -- From firebase
             NAME TEXT NOT NULL,
             CATEGORY TEXT NOT NULL,
             DESCRIPTION TEXT NOT NULL,
@@ -43,7 +43,7 @@ class MyLocalDatabaseService {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS GIFTS (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            GIFT_FIREBASE_ID TEXT NOT NULL, -- From firebase
+            GIFT_FIREBASE_ID TEXT, -- From firebase
             NAME TEXT NOT NULL,
             DESCRIPTION TEXT NOT NULL,
             CATEGORY TEXT NOT NULL,

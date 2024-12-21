@@ -4,7 +4,7 @@ import 'package:hedieaty_app/CustomWidgets/gradient_container.dart';
 //import 'package:hedieaty_app/home_page.dart';
 import 'package:hedieaty_app/Pages/login_page.dart';
 
-
+//For creating local DB for the first time and testing it
 // import 'Data/local_database/services/gift_service.dart';
 // import 'Data/local_database/mydatabase.dart';
 // import 'Data/local_database/services/event_service.dart';
@@ -37,14 +37,17 @@ import 'firebase_options.dart';
 //      'DESCRIPTION': 'Gift 1 description',
 //      'CATEGORY': 'Gift',
 //      'PRICE': 50.00,
-//      'PLEDGED_BY': 'John Doe',
 //      'IMG_URL': 'https://via.placeholder.com/150',
+//      'PLEDGED_BY': 'John Doe',
+//      'USER_ID': 'dyYryYryYsw',
 //      'EVENT_ID': 1
 //    });
 //
 //    //final event = await eventService.getEventsByUserId(1);
 //    //print(event);
-//
+//   await Firebase.initializeApp(
+//     options: DefaultFirebaseOptions.currentPlatform,
+//   );
 //   // Run the application
 //   runApp(const MyApp());
 // }

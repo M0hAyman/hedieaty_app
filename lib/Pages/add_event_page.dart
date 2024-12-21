@@ -57,13 +57,17 @@ class _AddEditEventPageState extends State<AddEditEventPage> {
   void _saveEvent() {
     if (_formKey.currentState!.validate()) {
       Navigator.pop(context, {
-        'EVENT_FIREBASE_ID': 'temPiDiNtTatFiEld', // Include firebase ID
+        //'EVENT_FIREBASE_ID': 'temPiDiNtTatFiEld', // Include firebase ID
+        if (widget.eventData != null && widget.eventData!.containsKey('EVENT_FIREBASE_ID'))
+          'EVENT_FIREBASE_ID': widget.eventData!['EVENT_FIREBASE_ID'], // Retain Firestore ID if it exists
         'NAME': _nameController.text,
         'CATEGORY': _categoryController.text,
         'DESCRIPTION': _descriptionController.text,
         'DATE': _dateController.text,
         'LOCATION': _locationController.text,
         'USER_ID': widget.userId, // Include userId
+
+
       });
     }
   }

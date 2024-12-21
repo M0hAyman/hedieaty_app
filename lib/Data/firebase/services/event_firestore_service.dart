@@ -1,28 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EventFirestoreService {
-  final CollectionReference eventCollection =
-  FirebaseFirestore.instance.collection('events');
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Add event to Firestore
-  Future<void> addEvent(Map<String, dynamic> eventData) async {
-    await eventCollection.add(eventData);
+  Future<DocumentReference> addEvent(String userId, Map<String, dynamic> eventData) async {
+    return await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('events')
+        .add(eventData);
   }
 
   // Fetch events for a specific user
   Future<List<QueryDocumentSnapshot>> getEventsByUser(String userId) async {
-    QuerySnapshot snapshot =
-    await eventCollection.where('userId', isEqualTo: userId).get();
+    QuerySnapshot snapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('events')
+        .get();
     return snapshot.docs;
   }
 
-  // Update event data
-  Future<void> updateEvent(String eventId, Map<String, dynamic> data) async {
-    await eventCollection.doc(eventId).update(data);
+  // Update event
+  Future<void> updateEvent(String userId, String eventId, Map<String, dynamic> data) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('events')
+        .doc(eventId)
+        .update(data);
   }
 
-  // Delete an event
-  Future<void> deleteEvent(String eventId) async {
-    await eventCollection.doc(eventId).delete();
+  // Delete event
+  Future<void> deleteEvent(String userId, String eventId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('events')
+        .doc(eventId)
+        .delete();
   }
 }

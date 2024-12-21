@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hedieaty_app/Pages/add_event_page.dart';
-//import '../Data/event_service.dart'; // Update the path to EventService
+import '../Data/firebase/services/event_firestore_service.dart';
 import '../Data/local_database/services/event_service.dart';
 import 'gift_list_page.dart';
 
@@ -17,6 +17,7 @@ class EventListPage extends StatefulWidget {
 
 class _EventListPageState extends State<EventListPage> {
   final EventService _eventService = EventService();
+  final EventFirestoreService _firestoreService = EventFirestoreService();
   List<Map<String, dynamic>> _events = [];
 
   @override
@@ -57,6 +58,33 @@ class _EventListPageState extends State<EventListPage> {
     await _eventService.deleteEvent(eventId);
     _fetchEvents();
   }
+
+  Future<void> _publishEvent(Map<String, dynamic> eventData) async {
+    try {
+      final firebaseId = eventData['EVENT_FIREBASE_ID'];
+      if (firebaseId != null && firebaseId.isNotEmpty) {
+        await _firestoreService.updateEvent(widget.userId, firebaseId, eventData);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event updated on Firestore.')),
+        );
+      } else {
+        final newDoc = await _firestoreService.addEvent(widget.userId, eventData);
+        await _eventService.updateEvent(eventData['ID'], {
+          ...eventData,
+          'EVENT_FIREBASE_ID': newDoc.id,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event published to Firestore.')),
+        );
+      }
+    } catch (e) {
+      print('Error publishing event: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to publish event.')),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +128,10 @@ class _EventListPageState extends State<EventListPage> {
                 IconButton(
                   icon: const Icon(Icons.delete),
                   onPressed: () => _deleteEvent(event['ID']),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.cloud_upload),
+                  onPressed: () => _publishEvent(event),
                 ),
               ],
             ),
