@@ -31,10 +31,37 @@ class _EventListPageState extends State<EventListPage> {
     });
 
     try {
-      final events = await _eventService.getEventsByUserId(widget.userId);
-      setState(() {
-        _events = events;
-      });
+      // Step 1: Attempt to fetch from local database
+      final localEvents = await _eventService.getEventsByUserId(widget.userId);
+
+      if (localEvents.isEmpty) {
+        // Step 2: If local is empty, fetch from Firestore
+        final firestoreEvents = await _firestoreService.getEventsByUser(widget.userId);
+
+        // Convert Firestore documents to a format compatible with local storage
+        final List<Map<String, dynamic>> events = firestoreEvents.map((doc) {
+          return {
+            'ID': null, // Local ID will be auto-assigned
+            ...doc.data() as Map<String, dynamic>,
+            'EVENT_FIREBASE_ID': doc.id, // Keep the Firebase ID
+            'USER_ID': widget.userId,
+          };
+        }).toList();
+
+        // Step 3: Save Firestore events to local database
+        for (var event in events) {
+          await _eventService.insertEvent(event);
+        }
+
+        setState(() {
+          _events = events;
+        });
+      } else {
+        // Fetch local events if available
+        setState(() {
+          _events = localEvents;
+        });
+      }
     } catch (e) {
       print('Error fetching events: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -46,6 +73,7 @@ class _EventListPageState extends State<EventListPage> {
       });
     }
   }
+
 
   void _addOrEditEvent({Map<String, dynamic>? eventData}) async {
     final result = await Navigator.push(
@@ -63,15 +91,39 @@ class _EventListPageState extends State<EventListPage> {
         await _eventService.insertEvent(result);
       } else {
         await _eventService.updateEvent(eventData['ID'], result);
+
+        // Update Firestore if published
+        if (eventData['EVENT_FIREBASE_ID'] != null && eventData['EVENT_FIREBASE_ID'].isNotEmpty) {
+          await _firestoreService.updateEvent(
+            widget.userId,
+            eventData['EVENT_FIREBASE_ID'],
+            result,
+          );
+        }
+
       }
       _fetchEvents();
     }
   }
 
   void _deleteEvent(int eventId) async {
-    await _eventService.deleteEvent(eventId);
+    // Find the event locally
+    final event = _events.firstWhere((e) => e['ID'] == eventId, orElse: () => <String, dynamic>{}); // Empty map if not found
+
+    if (event.isNotEmpty) {
+      // Delete from local database
+      await _eventService.deleteEvent(eventId);
+
+      // Delete from Firestore if published
+      if (event['EVENT_FIREBASE_ID'] != null && event['EVENT_FIREBASE_ID'].isNotEmpty) {
+        await _firestoreService.deleteEvent(widget.userId, event['EVENT_FIREBASE_ID']);
+      }
+    }else {
+      print('Event not found for deletion.');
+    }
     _fetchEvents();
   }
+
 
   Future<void> _publishEvent(Map<String, dynamic> eventData) async {
     try {
