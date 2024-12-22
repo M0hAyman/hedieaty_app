@@ -26,9 +26,21 @@ class GiftService {
     );
   }
   Future<int> insertGift(Map<String, dynamic> giftData) async {
-    final db = await _dbService.getDatabaseInstance();
-    return await db!.insert('GIFTS', giftData, conflictAlgorithm: ConflictAlgorithm.replace,);
+    try {
+      final db = await _dbService.getDatabaseInstance();
+      final id = await db!.insert(
+        'GIFTS',
+        giftData,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      print('The new row id inserted: $id');
+      return id; // Return the generated ID
+    } catch (e) {
+      print("Error inserting gift: $e");
+      throw Exception("Failed to insert gift.");
+    }
   }
+
 
   Future<List<Map<String, dynamic>>> getGiftsByEventId(int eventId) async {
     final db = await _dbService.getDatabaseInstance();

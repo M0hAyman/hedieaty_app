@@ -45,14 +45,18 @@ class _AddEditGiftPageState extends State<AddEditGiftPage> {
   Future<void> _saveGift() async {
     if (_formKey.currentState!.validate()) {
       final giftData = {
-        'GIFT_FIREBASE_ID': 'temPiDiNtTatFiEld', // Include firebase ID
+        'ID': widget.giftData?['ID'], // Preserve the ID if editing
+        if (widget.giftData != null && widget.giftData!.containsKey('GIFT_FIREBASE_ID'))
+          'GIFT_FIREBASE_ID': widget.giftData!['GIFT_FIREBASE_ID'], // Retain Firestore ID if it exists
         'NAME': _nameController.text.trim(),
         'DESCRIPTION': _descriptionController.text.trim(),
         'CATEGORY': _categoryController.text.trim(),
         'PRICE': double.tryParse(_priceController.text.trim()) ?? 0.0,
         'IMG_URL': _imageUrl ?? '',
-        'PLEDGED_BY': 'No one yet', // Default value
+        'IS_PLEDGED': widget.giftData?['IS_PLEDGED'] ?? 0, // Default value
+        'PLEDGED_BY': widget.giftData?['PLEDGED_BY'] ?? '', // Default value
         'USER_ID': widget.userId, // Add 'USER_ID' field
+        'EVENT_FIREBASE_ID': widget.giftData?['EVENT_FIREBASE_ID'] ?? '',
         'EVENT_ID': widget.eventId,
       };
 

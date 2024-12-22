@@ -32,7 +32,7 @@ import 'firebase_options.dart';
 //    });
 //
 //    await giftService.insertGift({
-//      'GIFT_FIREBASE_ID': 'AnyFiReBaseId1',
+//      'GIFT_FIREBASE_ID': '',
 //      'NAME': 'Gift 1',
 //      'DESCRIPTION': 'Gift 1 description',
 //      'CATEGORY': 'Gift',
@@ -40,6 +40,7 @@ import 'firebase_options.dart';
 //      'IMG_URL': 'https://via.placeholder.com/150',
 //      'PLEDGED_BY': 'John Doe',
 //      'USER_ID': 'dyYryYryYsw',
+//       'EVENT_FIREBASE_ID': '',
 //      'EVENT_ID': 1
 //    });
 //

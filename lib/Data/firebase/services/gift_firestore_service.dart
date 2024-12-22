@@ -1,44 +1,106 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../Models/gift_model.dart';
-
-
 class GiftFirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collection = 'gifts';
 
-  // Add a new gift
-  Future<void> addGift(Gift gift) async {
-    await _firestore.collection(_collection).add(gift.toFirestore());
+  // Add a gift
+  Future<DocumentReference> addGift(String userId, String eventId, Map<String, dynamic> giftData) async {
+    try {
+      if (userId.isEmpty || eventId.isEmpty) {
+        throw Exception('User ID or Event ID is missing');
+      }
+      return await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('events')
+          .doc(eventId)
+          .collection('gifts')
+          .add(giftData);
+    } catch (e) {
+      print("Error adding gift: $e");
+      rethrow;
+    }
   }
 
-  // Get gifts for a specific event
-  Future<List<Gift>> getGiftsByEvent(String eventId) async {
+
+  // Update a gift
+  Future<void> updateGift(String userId, String eventId, String giftId, Map<String, dynamic> giftData) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('events')
+          .doc(eventId)
+          .collection('gifts')
+          .doc(giftId)
+          .update(giftData);
+    } catch (e) {
+      print("Error updating gift: $e");
+      rethrow;
+    }
+  }
+
+
+  // Fetch all gifts for a specific event
+  Future<List<QueryDocumentSnapshot>> getGiftsByEvent(String userId, String? eventId) async {
+    if(eventId == null) {
+      print('Firebase Event ID is null!');
+      return [];
+    }
     final querySnapshot = await _firestore
-        .collection(_collection)
-        .where('eventId', isEqualTo: eventId)
+        .collection('users')
+        .doc(userId)
+        .collection('events')
+        .doc(eventId)
+        .collection('gifts')
         .get();
 
-    return querySnapshot.docs.map((doc) => Gift.fromFirestore(doc)).toList();
-  }
-
-  // Update a gift's status
-  Future<void> updateGiftStatus(String giftId, String newStatus) async {
-    await _firestore.collection(_collection).doc(giftId).update({
-      'status': newStatus,
-    });
-  }
-
-  // Update gift's pledgedBy field
-  Future<void> pledgeGift(String giftId, String pledgedByUserId) async {
-    await _firestore.collection(_collection).doc(giftId).update({
-      'status': 'pledged',
-      'pledgedBy': pledgedByUserId,
-    });
+    return querySnapshot.docs;
   }
 
   // Delete a gift
-  Future<void> deleteGift(String giftId) async {
-    await _firestore.collection(_collection).doc(giftId).delete();
+  Future<void> deleteGift(String userId, String? eventId, String giftId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('events')
+        .doc(eventId)
+        .collection('gifts')
+        .doc(giftId)
+        .delete();
   }
+
+  // Update pledge status
+  Future<void> pledgeGift(
+      String userId, String eventId, String giftId, {String status = 'available', String? pledgedBy}) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('events')
+          .doc(eventId)
+          .collection('gifts')
+          .doc(giftId)
+          .update({
+        'status': status,
+        'pledgedBy': pledgedBy,
+      });
+    } catch (e) {
+      print("Error updating gift status: $e");
+      rethrow;
+    }
+  }
+
+  //replace pledgeGift and unpledgeGift with the above method for better flexibility.
+
+  // Future<void> unpledgeGift(String userId, String eventId, String giftId) async {
+  //   await _firestore
+  //       .collection('users')
+  //       .doc(userId)
+  //       .collection('events')
+  //       .doc(eventId)
+  //       .collection('gifts')
+  //       .doc(giftId)
+  //       .update({'status': 'available', 'pledgedBy': null});
+  // }
 }

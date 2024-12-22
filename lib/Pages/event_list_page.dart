@@ -90,6 +90,8 @@ class _EventListPageState extends State<EventListPage> {
       if (eventData == null) {
         await _eventService.insertEvent(result);
       } else {
+        print("Event Data: $eventData");
+        print("Event ID: ${eventData['ID']}");
         await _eventService.updateEvent(eventData['ID'], result);
 
         // Update Firestore if published
@@ -185,7 +187,8 @@ class _EventListPageState extends State<EventListPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => GiftListPage(
-                      eventId: event['ID'],
+                      eventId: event['ID'], // Use Firestore ID if available; fallback to local ID //could make some bugs
+                      firebaseEventId: event['EVENT_FIREBASE_ID'],
                       userId: widget.userId,
                     ),
                   ),
