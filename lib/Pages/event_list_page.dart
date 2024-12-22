@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hedieaty_app/Pages/add_event_page.dart';
 import '../Data/firebase/services/event_firestore_service.dart';
+import '../Data/firebase/services/gift_firestore_service.dart';
 import '../Data/local_database/services/event_service.dart';
+import '../Data/local_database/services/gift_service.dart';
 import 'gift_list_page.dart';
 
 class EventListPage extends StatefulWidget {
@@ -113,12 +115,32 @@ class _EventListPageState extends State<EventListPage> {
     final event = _events.firstWhere((e) => e['ID'] == eventId, orElse: () => <String, dynamic>{}); // Empty map if not found
 
     if (event.isNotEmpty) {
+      try {
+      // Fetch all gifts associated with the event from the local database
+      final giftService = GiftService();
+      final firestoreService = GiftFirestoreService();
+      final eventGifts = await giftService.getGiftsByEventId(eventId);
+
+      // Delete each gift
+      for (final gift in eventGifts) {
+        await giftService.deleteGift(gift['ID']);
+        if (gift['GIFT_FIREBASE_ID'] != null && gift['GIFT_FIREBASE_ID'].isNotEmpty) {
+          await firestoreService.deleteGift(widget.userId, event['EVENT_FIREBASE_ID'], gift['GIFT_FIREBASE_ID']);
+        }
+      }
+
       // Delete from local database
       await _eventService.deleteEvent(eventId);
 
       // Delete from Firestore if published
       if (event['EVENT_FIREBASE_ID'] != null && event['EVENT_FIREBASE_ID'].isNotEmpty) {
         await _firestoreService.deleteEvent(widget.userId, event['EVENT_FIREBASE_ID']);
+      }
+      } catch (e) {
+        print('Error deleting event: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete event!.')),
+        );
       }
     }else {
       print('Event not found for deletion.');
