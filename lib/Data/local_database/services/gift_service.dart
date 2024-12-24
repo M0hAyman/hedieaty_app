@@ -7,14 +7,19 @@ import '../mydatabase.dart';
 class GiftService {
   final MyLocalDatabaseService _dbService = MyLocalDatabaseService();
 
-  Future<int> pledgeGift(int giftId, String userId) async {
+  Future<int> pledgeGift(String giftId, String userId) async {
     final db = await _dbService.getDatabaseInstance();
+    try{
     return await db!.update(
       'GIFTS',
       {'IS_PLEDGED': 1, 'PLEDGED_BY': userId},
-      where: 'ID = ?',
+      where: 'GIFT_FIREBASE_ID = ?',
       whereArgs: [giftId],
     );
+    } catch (e) {
+      print("Error pledging gift: $e");
+      throw Exception("Failed to pledge gift.");
+    }
   }
   Future<int> unpledgeGift(int giftId) async {
     final db = await _dbService.getDatabaseInstance();

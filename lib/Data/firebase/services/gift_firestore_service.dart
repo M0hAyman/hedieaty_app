@@ -72,7 +72,7 @@ class GiftFirestoreService {
 
   // Update pledge status
   Future<void> pledgeGift(
-      String userId, String eventId, String giftId, {String status = 'available', String? pledgedBy}) async {
+      String currUserId,String userId, String eventId, String giftId) async {
     try {
       await _firestore
           .collection('users')
@@ -82,8 +82,8 @@ class GiftFirestoreService {
           .collection('gifts')
           .doc(giftId)
           .update({
-        'status': status,
-        'pledgedBy': pledgedBy,
+        'IS_PLEDGED': 1,
+        'PLEDGED_BY': currUserId,
       });
     } catch (e) {
       print("Error updating gift status: $e");

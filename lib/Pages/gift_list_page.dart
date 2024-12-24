@@ -105,15 +105,15 @@ class _GiftListPageState extends State<GiftListPage> {
     }
   }
 
-  Future<void> _pledgeGift(int giftId) async {
-    await _giftService.pledgeGift(giftId, widget.userId);
-    _fetchGifts();
-  }
-
-  Future<void> _unpledgeGift(int giftId) async {
-    await _giftService.unpledgeGift(giftId);
-    _fetchGifts();
-  }
+  // Future<void> _pledgeGift(int giftId) async {
+  //   await _giftService.pledgeGift(giftId, widget.userId);
+  //   _fetchGifts();
+  // }
+  //
+  // Future<void> _unpledgeGift(int giftId) async {
+  //   await _giftService.unpledgeGift(giftId);
+  //   _fetchGifts();
+  // }
 
   void _addOrEditGift({Map<String, dynamic>? giftData}) async {
     final result = await Navigator.push(
@@ -210,7 +210,9 @@ class _GiftListPageState extends State<GiftListPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (gift['IS_PLEDGED'] == 1)
-                  const Icon(Icons.check_circle, color: Colors.green),
+                  const Icon(Icons.check, color: Colors.green)
+                else
+                  const Icon(Icons.access_time_sharp, color: Colors.amber,),
                 if (isOwner)
                   IconButton(
                     icon: const Icon(Icons.edit),
@@ -235,22 +237,22 @@ class _GiftListPageState extends State<GiftListPage> {
                     },
                   ),
 
-                if (!isOwner)
-                  IconButton(
-                    icon: Icon(
-                      gift['IS_PLEDGED'] == 1 ? Icons.cancel : Icons.star,
-                      color: gift['IS_PLEDGED'] == 1
-                          ? Colors.red
-                          : Colors.blue,
-                    ),
-                    onPressed: () {
-                      if (gift['IS_PLEDGED'] == 1) {
-                        _unpledgeGift(gift['ID']);
-                      } else {
-                        _pledgeGift(gift['ID']);
-                      }
-                    },
-                  ),
+                // if (isOwner)
+                //   IconButton(
+                //     icon: Icon(
+                //       gift['IS_PLEDGED'] == 1 ? Icons.cancel : Icons.star,
+                //       color: gift['IS_PLEDGED'] == 1
+                //           ? Colors.red
+                //           : Colors.blue,
+                //     ),
+                //     onPressed: () {
+                //       if (gift['IS_PLEDGED'] == 1) {
+                //         //_unpledgeGift(gift['ID']);
+                //       } else {
+                //         //_pledgeGift(gift['ID']);
+                //       }
+                //     },
+                //   ),
               ],
             ),
           );

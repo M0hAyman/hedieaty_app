@@ -94,7 +94,11 @@ class _HomePageState extends State<HomePage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => FriendEventListPage(
+                                currentUserId: _authService.currentUser!.uid,
                                 friendName: friendName,
+                                friendId: friend.fromId == _authService.currentUser?.uid
+                                    ? friend.toId
+                                    : friend.fromId,
                               ),
                             ),
                           );
