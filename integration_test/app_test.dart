@@ -1,73 +1,176 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
+import 'package:hedieaty_app/Pages/AddEditGiftPage.dart';
+import 'package:hedieaty_app/Pages/gift_list_page.dart';
+//import 'package:integration_test/integration_test.dart';
 import 'package:flutter/material.dart';
-import 'package:hedieaty_app/main.dart' as app;
+//import 'package:hedieaty_app/main.dart' as app;
+
+
+import 'package:mockito/mockito.dart';
+import 'package:hedieaty_app/Data/firebase/services/gift_firestore_service.dart';
+import 'package:hedieaty_app/Data/local_database/services/gift_service.dart';
+
+
+// Mock dependencies
+class MockGiftService extends Mock implements GiftService {}
+
+class MockGiftFirestoreService extends Mock implements GiftFirestoreService {}
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  late MockGiftService mockGiftService;
+  //late MockGiftFirestoreService mockFirestoreService;
 
-  testWidgets('Login and Navigate to Profile Page Test', (WidgetTester tester) async {
-    // Launch the app
-    app.main();
-    await tester.pumpAndSettle();
+  setUp(() {
+    mockGiftService = MockGiftService();
+    //mockFirestoreService = MockGiftFirestoreService();
+  });
 
-    // Wait for the "Login" text to appear with a timeout
-    const timeout = Duration(seconds: 10);
-    final endTime = DateTime.now().add(timeout);
+  Widget createTestWidget({required GiftListPage giftListPage}) {
+    return MaterialApp(
+      home: giftListPage,
+    );
+  }
 
-    while (find.text('Login').evaluate().isEmpty) {
-      await tester.pump();
-      if (DateTime.now().isAfter(endTime)) {
-        throw TestFailure('Login page not found within $timeout');
-      }
-    }
+  group('GiftListPage', () {
+    const testUserId = 'test_user_1';
+    const testEventId = 123;
+    const testFirebaseEventId = 'test_event_123';
 
-    // Verify Login Page is displayed
-    expect(find.text('Login'), findsOneWidget);
+    testWidgets('displays empty message when there are no gifts',
+            (WidgetTester tester) async {
+          // Arrange: Mock empty local database response
+          when(mockGiftService.getGiftsByEventId('1' as int))
+              .thenAnswer((_) async => []);
 
-    // Input email
-    final emailField = find.byType(TextField).at(0); // Assuming first TextField is Email
-    await tester.enterText(emailField, 'b@gmail.com');
+          await tester.pumpWidget(createTestWidget(
+            giftListPage: GiftListPage(
+              eventId: testEventId,
+              firebaseEventId: testFirebaseEventId,
+              userId: testUserId,
+            ),
+          ));
 
-    // Input password
-    final passwordField = find.byType(TextField).at(1); // Assuming second TextField is Password
-    await tester.enterText(passwordField, 'mohamed12');
+          // Act: Wait for widgets to build
+          await tester.pump();
 
-    // Tap the Login button
-    final loginButton = find.text('Login');
-    await tester.tap(loginButton);
-    await tester.pumpAndSettle();
+          // Assert: Verify the empty message is displayed
+          expect(find.text('No gifts added for this event.'), findsOneWidget);
+        });
 
-    // Wait for Main Navigation Bar to appear
-    final navBarTimeout = Duration(seconds: 10);
-    final navBarEndTime = DateTime.now().add(navBarTimeout);
+    testWidgets('displays gifts when fetched from local database',
+            (WidgetTester tester) async {
+          // Arrange: Mock local database response with sample gifts
+          when(mockGiftService.getGiftsByEventId('1' as int)).thenAnswer(
+                (_) async => [
+              {
+                'ID': 1,
+                'NAME': 'Sample Gift 1',
+                'CATEGORY': 'Toys',
+                'IS_PLEDGED': 0,
+                'GIFT_FIREBASE_ID': null,
+                'USER_ID': testUserId,
+              },
+            ],
+          );
 
-    while (find.byType(BottomNavigationBar).evaluate().isEmpty) {
-      await tester.pump();
-      if (DateTime.now().isAfter(navBarEndTime)) {
-        throw TestFailure('Main Navigation Bar not found within $navBarTimeout');
-      }
-    }
+          await tester.pumpWidget(createTestWidget(
+            giftListPage: GiftListPage(
+              eventId: testEventId,
+              firebaseEventId: testFirebaseEventId,
+              userId: testUserId,
+            ),
+          ));
 
-    // Verify that Main Navigation Bar is displayed
-    expect(find.byType(BottomNavigationBar), findsOneWidget);
+          // Act: Wait for widgets to build
+          await tester.pump();
 
-    // Tap on the Profile tab in the Bottom Navigation Bar
-    final profileTab = find.byIcon(Icons.person);
-    await tester.tap(profileTab);
-    await tester.pumpAndSettle();
+          // Assert: Verify that the gift is displayed
+          expect(find.text('Sample Gift 1'), findsOneWidget);
+          expect(find.text('Category: Toys'), findsOneWidget);
+        });
 
-    // Verify that the Profile Page is displayed
-    final profileTimeout = Duration(seconds: 10);
-    final profileEndTime = DateTime.now().add(profileTimeout);
+    testWidgets('navigates to AddEditGiftPage when add button is tapped',
+            (WidgetTester tester) async {
+          await tester.pumpWidget(createTestWidget(
+            giftListPage: GiftListPage(
+              eventId: testEventId,
+              firebaseEventId: testFirebaseEventId,
+              userId: testUserId,
+            ),
+          ));
 
-    while (find.text('Profile').evaluate().isEmpty) {
-      await tester.pump();
-      if (DateTime.now().isAfter(profileEndTime)) {
-        throw TestFailure('Profile Page not found within $profileTimeout');
-      }
-    }
+          // Act: Tap on the add button
+          await tester.tap(find.byIcon(Icons.add));
+          await tester.pumpAndSettle();
 
-    expect(find.text('Profile'), findsOneWidget); // Adjust text as per your Profile Page
+          // Assert: Verify navigation to AddEditGiftPage
+          expect(find.byType(AddEditGiftPage), findsOneWidget);
+        });
+
+    testWidgets('deletes a gift when delete button is pressed',
+            (WidgetTester tester) async {
+          // Arrange: Mock local database response with a sample gift
+          when(mockGiftService.getGiftsByEventId('1' as int)).thenAnswer(
+                (_) async => [
+              {
+                'ID': 1,
+                'NAME': 'Sample Gift 1',
+                'CATEGORY': 'Toys',
+                'IS_PLEDGED': 0,
+                'GIFT_FIREBASE_ID': null,
+                'USER_ID': testUserId,
+              },
+            ],
+          );
+
+
+          await tester.pumpWidget(createTestWidget(
+            giftListPage: GiftListPage(
+              eventId: testEventId,
+              firebaseEventId: testFirebaseEventId,
+              userId: testUserId,
+            ),
+          ));
+
+          // Act: Tap the delete button for the gift
+          await tester.pump();
+          await tester.tap(find.byIcon(Icons.delete));
+          await tester.pumpAndSettle();
+
+          // Assert: Verify the deleteGift method was called
+          verify(mockGiftService.deleteGift(1)).called(1);
+        });
+
+    testWidgets('publishes a gift to Firestore when upload button is pressed',
+            (WidgetTester tester) async {
+          // Arrange: Mock local database response with a gift
+          when(mockGiftService.getGiftsByEventId('1' as int)).thenAnswer(
+                (_) async => [
+              {
+                'ID': 1,
+                'NAME': 'Sample Gift 1',
+                'CATEGORY': 'Toys',
+                'IS_PLEDGED': 0,
+                'GIFT_FIREBASE_ID': null,
+                'USER_ID': testUserId,
+              },
+            ],
+          );
+
+
+          await tester.pumpWidget(createTestWidget(
+            giftListPage: GiftListPage(
+              eventId: testEventId,
+              firebaseEventId: testFirebaseEventId,
+              userId: testUserId,
+            ),
+          ));
+
+          // Act: Tap the publish button for the gift
+          await tester.pump();
+          await tester.tap(find.byIcon(Icons.cloud_upload));
+          await tester.pumpAndSettle();
+
+        });
   });
 }
