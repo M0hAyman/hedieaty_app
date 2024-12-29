@@ -1,5 +1,5 @@
-package com.example.hedieaty_app
+//package com.example.hedieaty_gift_app_viiix
 
-import io.flutter.embedding.android.FlutterActivity
+//import io.flutter.embedding.android.FlutterActivity
 
-class MainActivity: FlutterActivity()
+//class MainActivity: FlutterActivity()

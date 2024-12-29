@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.hedieaty_app"
+    namespace = "com.example.hedieaty_gift_app_viiix"
     compileSdk = 34 //flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.hedieaty_app"
+        applicationId = "com.example.hedieaty_gift_app_viiix"
         // Set the minSdk to 23 to meet Firebase Auth requirements
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
